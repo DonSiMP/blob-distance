@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 2.8 )
 set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH} )
 
 project( sample )
-add_executable( sample kinect_pcl_grabber.h main.cpp )
+add_executable( sample kinect_pcl_grabber.h blob-utils.h main.cpp )
 
 # Find Packages
 find_package( PCL 1.8 REQUIRED )
