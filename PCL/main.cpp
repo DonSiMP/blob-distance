@@ -21,21 +21,19 @@ limitations under the License.
 
 #include <iostream>
 #include "kinect_pcl_grabber.h"
-#include "blob-utils.h"
+#include "detection-utils.h"
 #include <pcl/visualization/pcl_visualizer.h>
 #include <vector>
+#include <pcl/filters/filter.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/search/search.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/visualization/cloud_viewer.h>
-#include <pcl/filters/passthrough.h>
 
 //typedef pcl::PointXYZRGBA PointType;
 typedef pcl::PointXYZ PointType;
 bool buildBack = false;
 bool active = false;
-
-pcl::PassThrough<PointType> filterZ, filterY, filterX;
 
 // PCL Visualizer
 boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
@@ -59,6 +57,15 @@ int main(int argc, char* argv[])
 #endif
 			if (active) {
 				active = false;
+				if (viewer->contains("cube")) {
+					viewer->removeShape("cube");
+				}
+				if (viewer->contains("plane")) {
+					viewer->removeShape("plane");
+				}
+				if (viewer->contains(cloudId + "_plane")) {
+					viewer->removePointCloud(cloudId + "_plane");
+				}
 			}
 			else {
 				active = true;
@@ -79,21 +86,13 @@ int main(int argc, char* argv[])
 	// Point Cloud
 	pcl::PointCloud<PointType>::Ptr cloud;
 
-	//configure Filter
-	filterZ.setFilterFieldName("z");
-	filterZ.setFilterLimits(1., 3.5);
-	filterX.setFilterFieldName("x");
-	filterX.setFilterLimits(1., 1);
-	filterY.setFilterFieldName("y");
-	filterY.setFilterLimits(-.5, .5);
-
 	boost::mutex mutex;
 	boost::function<void(pcl::PointCloud<PointType>::Ptr&, pcl::PointCloud<PointType>::Ptr&)> funcRange =
 		[](pcl::PointCloud<PointType>::Ptr& minRange, pcl::PointCloud<PointType>::Ptr& maxRange) {
 		minRange->points[0].x = -0.2;
 		maxRange->points[0].x = 0.2;
 		minRange->points[0].z = 1.;
-		maxRange->points[0].z = 2.5;
+		maxRange->points[0].z = 2.;
 		//minRange->points[0].y = -.3;
 		//maxRange->points[0].y = .0;
 	};
@@ -123,23 +122,48 @@ int main(int argc, char* argv[])
 			}
 #endif
 #ifdef Plane
-			pcl::ModelCoefficients::ConstPtr plane = findCluster_PlaneSegmentation(ptr);
+			pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+			pcl::ModelCoefficients::ConstPtr plane = findCluster_PlaneSegmentation(ptr, inliers);
 			if (plane->values.size() == 4) {
-				if (viewer->contains("plane_1")) {
-					viewer->removeShape("plane_1", 0);
+				if (viewer->contains("plane")) {
+					viewer->removeShape("plane", 0);
 				}
-				viewer->addPlane(*plane, "plane_1", 0);
-				viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0.9, 0.1, 0.1 /*R,G,B*/, "plane_1", 0);
-				viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, 0.6, "plane_1", 0);
-				viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "plane_1", 0);
+				viewer->addPlane(*plane, "plane", 0);
+				viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0.9, 0.1, 0.1, "plane", 0);//R,G,B
+				viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, 0.6, "plane", 0);
+				viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "plane", 0);
 			}
+			pcl::PointCloud<PointType>::Ptr planeCloud(new pcl::PointCloud<PointType>());
+			pcl::copyPointCloud(*ptr, *inliers, *planeCloud);
+			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(planeCloud, 122, 122, 122);
+			if (!viewer->updatePointCloud(planeCloud, single_color, cloudId + "_plane")) {
+				viewer->addPointCloud(planeCloud, single_color, cloudId + "_plane");
+			}
+			float dist = calcDistance(plane);
+			if (viewer->contains("cube")) {
+				viewer->removeShape("cube");
+			}
+			std::cout << dist << " m " << std::endl;
+			if (!viewer->updateText(std::to_string(dist), 0, 50, "dist")) {
+				viewer->addText(std::to_string(dist), 0, 50, "dist");
+			}
+
+			float middlPnt[] = {
+				startPoint[0] + dist * measureVector[0],// X
+				startPoint[1] + dist * measureVector[1],// Y
+				startPoint[2] + dist * measureVector[2],// Z
+			};
+			viewer->addCube(middlPnt[0] - .05, middlPnt[0] + .05, middlPnt[1] - .05, middlPnt[1] + .05, middlPnt[2] - .05, middlPnt[2] + .05);
+			viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0.9, 0.9, 0.1, "cube", 0);//R,G,B
+			viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, 0.6, "cube", 0);
+			viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, "cube", 0);
 #endif
 		}
-		else {
-			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(ptr, active ? 255 : 0, active ? 0 : 255, 0);
-			if (!viewer->updatePointCloud(ptr, single_color, cloudId)) {
-				viewer->addPointCloud(ptr, single_color, cloudId);
-			}
+		pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(ptr, 0, 255, 0);
+		std::vector<int> indices;
+		pcl::removeNaNFromPointCloud(*ptr, *ptr, indices);
+		if (ptr->size() > 100 && !viewer->updatePointCloud(ptr, single_color, cloudId)) {
+			viewer->addPointCloud(ptr, single_color, cloudId);
 		}
 		updated = true;
 	};
@@ -154,7 +178,7 @@ int main(int argc, char* argv[])
 
 	// Start Grabber
 	grabber->start();
-
+	viewer->addCoordinateSystem(3., 0, 0, 10, 1);
 
 	while (!viewer->wasStopped()) {
 		boost::mutex::scoped_try_lock lock(mutex);
