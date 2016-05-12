@@ -141,9 +141,6 @@ namespace pcl
 		if (proj) {
 			proj->Release();
 		}
-		if (cm) {
-			cm->CloseStreams();
-		}
 		if (pp) {
 			pp->Close();
 			pp->Release();
