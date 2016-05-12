@@ -20,7 +20,16 @@ limitations under the License.
 #endif
 
 #include <iostream>
-#include "kinect_pcl_grabber.h"
+
+#ifdef R200_GRABBER
+#include "grabber\r200_pcl_grabber.h"
+#endif
+#ifdef F200_GRABBER
+#include "grabber\f200_pcl_grabber.h"
+#endif
+#ifdef KINECT2_GRABBER
+#include "grabber\kinect_pcl_grabber.h"
+#endif
 #include "detection-utils.h"
 #include <pcl/visualization/pcl_visualizer.h>
 #include <vector>
@@ -89,10 +98,18 @@ int main(int argc, char* argv[])
 	boost::mutex mutex;
 	boost::function<void(pcl::PointCloud<PointType>::Ptr&, pcl::PointCloud<PointType>::Ptr&)> funcRange =
 		[](pcl::PointCloud<PointType>::Ptr& minRange, pcl::PointCloud<PointType>::Ptr& maxRange) {
+#ifdef KINECT2_GRABBER
 		minRange->points[0].x = -0.2;
 		maxRange->points[0].x = 0.2;
 		minRange->points[0].z = 1.;
 		maxRange->points[0].z = 2.;
+#endif // KINECT2_GRABBER
+#ifndef KINECT2_GRABBER
+		minRange->points[0].x = -0.2;
+		maxRange->points[0].x = 0.2;
+		minRange->points[0].z = .3;
+		maxRange->points[0].z = .5;
+#endif
 		//minRange->points[0].y = -.3;
 		//maxRange->points[0].y = .0;
 	};
@@ -169,7 +186,17 @@ int main(int argc, char* argv[])
 	};
 
 	// Kinect2Grabber
-	boost::shared_ptr<pcl::Grabber> grabber = boost::make_shared<pcl::Kinect2Grabber>();
+	boost::shared_ptr<pcl::Grabber> grabber = boost::make_shared<
+#ifdef R200_GRABBER
+		pcl::R200Grabber
+#endif
+#ifdef F200_GRABBER
+		pcl::F200Grabber
+#endif
+#ifdef KINECT2_GRABBER
+		pcl::Kinect2Grabber
+#endif
+	>();
 
 
 	// Register Callback Function

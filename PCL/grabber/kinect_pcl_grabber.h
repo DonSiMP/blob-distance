@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef KINECT2_GRABBER
 #define KINECT2_GRABBER
 
 #define NOMINMAX
@@ -327,6 +326,4 @@ namespace pcl
 	}
 
 }
-
-#endif KINECT2_GRABBER
 

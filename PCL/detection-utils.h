@@ -24,7 +24,13 @@ typedef pcl::PointXYZ PointType;
 pcl::PointCloud<PointType>::Ptr bakCloud(new pcl::PointCloud<PointType>());
 pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
 
-static const float startPoint[] = { 0., -0.40, 0. };//40 cm distance from sensor to ground
+/*
+Kinect on Kinect-package 40 cm
+R200 on F200 Package 12 cm
+F200 on F200 Package 14 cm
+
+*/
+static const float startPoint[] = { 0., -0.14, 0. };//40 cm distance from sensor to ground
 static const float measureVector[] = { 0., 0., 1. };
 
 #define Plane
