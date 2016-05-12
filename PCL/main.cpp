@@ -30,6 +30,12 @@ limitations under the License.
 #ifdef KINECT2_GRABBER
 #include "grabber\kinect_pcl_grabber.h"
 #endif
+#ifdef LEAP_GRABBER
+#include "grabber\leap_pcl_grabber.h"
+#endif
+#ifdef DUO_GRABBER
+#include "grabber\duo_pcl_grabber.h"
+#endif
 #include "detection-utils.h"
 #include <pcl/visualization/pcl_visualizer.h>
 #include <vector>
@@ -105,10 +111,10 @@ int main(int argc, char* argv[])
 		maxRange->points[0].z = 2.;
 #endif // KINECT2_GRABBER
 #ifndef KINECT2_GRABBER
-		minRange->points[0].x = -0.2;
-		maxRange->points[0].x = 0.2;
-		minRange->points[0].z = .3;
-		maxRange->points[0].z = .5;
+		//minRange->points[0].x = -0.2;
+		//maxRange->points[0].x = 0.2;
+		minRange->points[0].z = .1;
+		maxRange->points[0].z = 1.;
 #endif
 		//minRange->points[0].y = -.3;
 		//maxRange->points[0].y = .0;
@@ -192,6 +198,12 @@ int main(int argc, char* argv[])
 #endif
 #ifdef F200_GRABBER
 		pcl::F200Grabber
+#endif
+#ifdef LEAP_GRABBER
+		pcl::LEAPGrabber
+#endif
+#ifdef DUO_GRABBER
+		pcl::DUOGrabber
 #endif
 #ifdef KINECT2_GRABBER
 		pcl::Kinect2Grabber
