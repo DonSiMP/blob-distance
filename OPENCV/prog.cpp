@@ -19,6 +19,15 @@ limitations under the License.
 #include <iostream>
 #include "kinect_grabber.h"
 
+
+/*KONFIG VALUES in mm*/
+#define CAM_HEIGHT 400.0
+/*END KONFIG VALUES*/
+const double sqCamHeight = CAM_HEIGHT * CAM_HEIGHT;
+/*END CONST VALUES FROM KONFIG*/
+
+
+
 using namespace std;
 
 void detectAndDraw(cv::Mat& img, cv::CascadeClassifier& cascade,
@@ -36,14 +45,13 @@ cv::Ptr<cv::BackgroundSubtractor> bgSub; //MOG2 Background subtractor
 cv::Ptr<cv::SimpleBlobDetector> blobber;
 std::vector<cv::KeyPoint> keypoints;
 
-
 int main(int, char**) {
 	int frameNum = 0;
 	double scale;
 	bool tryflip;
 	cv::CascadeClassifier cascade, nestedCascade;
 	//bgSub = cv::createBackgroundSubtractorKNN(90);
-	bgSub = cv::createBackgroundSubtractorMOG2(100,16.0,false); //MOG2 approach
+	bgSub = cv::createBackgroundSubtractorMOG2(100, 16.0, false); //MOG2 approach
 
 	cv::SimpleBlobDetector::Params params = cv::SimpleBlobDetector::Params();
 	params.filterByArea = true;
@@ -78,14 +86,32 @@ int main(int, char**) {
 				bgSub->apply(*frame, fgMask, 0.);
 			}
 
-			//cv::imwrite("d:\\work\\img.jpg", *frame);
-			bgSub->getBackgroundImage(bgMask);
-			imshow("Background Mask", bgMask);
-			imshow("Foreground Mask", fgMask);
-			cv::Mat fgFrame,fgFrameBlobs;
+			//bgSub->getBackgroundImage(bgMask);
+			//imshow("Background Mask", bgMask);
+			//imshow("Foreground Mask", fgMask);
+			cv::Mat fgFrame, fgFrameBlobs;
 			frame->copyTo(fgFrame, fgMask);
 			if (!buildBackground) {
-				blobber->detect(fgFrame, keypoints);
+				blobber->detect(fgFrame, keypoints);//find Blobs in image (background substracted)
+				for each (cv::KeyPoint var in keypoints)
+				{
+					//calculate middle distance at keypoint
+					double dist = 0., cnt = 0.;
+					for (size_t x = var.pt.x - 10; x < var.pt.x + 10 && x < grabber.depthWidth; x++)
+					{
+						for (size_t y = var.pt.y - 10; y < var.pt.y && y < grabber.depthHeight; y++)
+						{
+							size_t idx = y * grabber.depthWidth + x;
+							dist += (*grabber.getDepthData())[idx];
+							cnt++;
+						}
+					}
+					dist /= cnt;//middl Value
+					/*##################### calculated distance #####################*/
+					dist = sqrt(dist*dist - sqCamHeight);//real distance using pytagoras
+					/*##################### calculated distance #####################*/
+					cv::putText(fgFrame, to_string((dist / cnt)) + " mm", var.pt, cv::FONT_HERSHEY_PLAIN, 3., cv::Scalar(255, 255, 0));
+				}
 				cv::drawKeypoints(fgFrame, keypoints, fgFrameBlobs, cv::Scalar(0, 0, 255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 				cv::imshow("Foreground with Blobs", fgFrameBlobs);
 			}
@@ -111,73 +137,3 @@ int main(int, char**) {
 	grabber.stop();
 }
 
-void detectAndDraw(cv::Mat& img, cv::CascadeClassifier& cascade,
-	cv::CascadeClassifier& nestedCascade,
-	double scale, bool tryflip, int frameNum)
-{
-	double t = 0;
-	vector<cv::Rect> faces, faces2;
-	const static cv::Scalar colors[] =
-	{
-		cv::Scalar(255,0,0),
-		cv::Scalar(255,128,0),
-		cv::Scalar(255,255,0),
-		cv::Scalar(0,255,0),
-		cv::Scalar(0,128,255),
-		cv::Scalar(0,255,255),
-		cv::Scalar(0,0,255),
-		cv::Scalar(255,0,255)
-	};
-	cv::Mat gray, smallImg;
-
-	img.copyTo(gray, fgMask);
-	cvtColor(gray, gray, cv::COLOR_BGR2GRAY);
-	double fx = 1 / scale;
-	resize(gray, smallImg, cv::Size(), fx, fx, cv::INTER_LINEAR);
-	equalizeHist(smallImg, smallImg);
-
-	t = (double)cvGetTickCount();
-	if (tryflip)
-	{
-		flip(smallImg, smallImg, 1);
-	}
-	t = (double)cvGetTickCount() - t;
-	//printf("detection time = %g ms\n", t / ((double)cvGetTickFrequency()*1000.));
-	if (faces.size() > 0) {
-		cout << "drawing Faces:" + to_string(faces.size()) << std::endl;
-	}
-	for (size_t i = 0; i < faces.size(); i++)
-	{
-		cv::Rect r = faces[i];
-		cv::Mat smallImgROI;
-		vector<cv::Rect> nestedObjects;
-		cv::Point center;
-		cv::Scalar color = colors[i % 8];
-		int radius;
-
-		double aspect_ratio = (double)r.width / r.height;
-		if (0.75 < aspect_ratio && aspect_ratio < 1.3)
-		{
-			center.x = cvRound((r.x + r.width*0.5)*scale);
-			center.y = cvRound((r.y + r.height*0.5)*scale);
-			radius = cvRound((r.width + r.height)*0.25*scale);
-			circle(img, center, radius, color, 3, 8, 0);
-		}
-		else {
-			rectangle(img, cvPoint(cvRound(r.x*scale), cvRound(r.y*scale)),
-				cvPoint(cvRound((r.x + r.width - 1)*scale), cvRound((r.y + r.height - 1)*scale)),
-				color, 3, 8, 0);
-		}
-	}
-	if (faces.size() > 0) {
-		cv::Mat fgFrame;
-		img.copyTo(fgFrame, fgMask);
-		cv::imwrite("d:\\work\\1\\" + to_string(idx) + "-fgImage.jpg", fgFrame);
-		//cv::imwrite("d:\\work\\1\\" + to_string(idx++) + ".jpg", img);
-
-		::SetForegroundWindow((HWND)cvGetWindowHandle("result-gray"));
-	}
-	cv::imshow("result", img);
-	putText(smallImg, to_string(frameNum), cv::Point(15, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
-	cv::imshow("result-gray", smallImg);
-}

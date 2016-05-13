@@ -26,7 +26,7 @@ public:
 	~KinectGrabber();
 	bool fillFrame(cv::Mat * destData);
 	bool isDataAvailable();
-	cv::Mat getMat();
+	std::vector<UINT16> * getDepthData();
 	void start();
 	void stop();
 	size_t getFrameSize();
@@ -145,9 +145,9 @@ bool KinectGrabber::isDataAvailable()
 	return dataAvailable;
 }
 
-cv::Mat KinectGrabber::getMat()
+std::vector<UINT16> * KinectGrabber::getDepthData()
 {
-	return cv::Mat(depthHeight, depthWidth, CV_8U, &depthBuffer);
+	return &depthBuffer;
 }
 
 void KinectGrabber::stop()
@@ -192,10 +192,13 @@ bool KinectGrabber::fillFrame(cv::Mat * destData)
 	if (dataAvailable) {
 		for (size_t i = 0; i < depthBuffer.size(); i++) {
 			double depth = depthBuffer[i];
-			if (maxZ > 0 && depth > maxZ) {
+			if (maxZ = 0.) {
+				maxZ = 4000.;
+			}
+			if (maxZ > 0. && depth > maxZ) {
 				depth = maxZ;
 			}
-			if (minZ > 0 && minZ > depth) {
+			if (minZ > 0. && minZ > depth) {
 				depth = minZ;
 			}
 			depth = depth - minZ;
@@ -210,7 +213,6 @@ bool KinectGrabber::fillFrame(cv::Mat * destData)
 
 			depth = depth * UCHAR_MAX;
 			destData->at<UINT8>(i) = depth;
-
 		}
 	}
 	return dataAvailable;

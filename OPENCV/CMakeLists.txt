@@ -9,7 +9,7 @@ find_package( Boost REQUIRED )
 find_package( KinectSDK2 REQUIRED )
 
 if( OPENCV_FOUND AND KinectSDK2_FOUND )
-  add_executable( blob-detect webcam.cpp kinect_grabber.h )
+  add_executable( blob-detect prog.cpp kinect_grabber.h )
   
   # Additional Include Directories
   include_directories( ${OPENCVSDK_INCLUDE_DIRS} )
