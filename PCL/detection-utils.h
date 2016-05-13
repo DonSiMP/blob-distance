@@ -24,6 +24,7 @@ typedef pcl::PointXYZ PointType;
 pcl::PointCloud<PointType>::Ptr bakCloud(new pcl::PointCloud<PointType>());
 pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
 
+/*################## KONFIG VALUES Position of Cam ###################*/
 /*
 Kinect on Kinect-package 40 cm
 R200 on F200 Package 12 cm
@@ -33,7 +34,9 @@ DUO portrait on DUO Package 12 cm
 
 */
 static const float startPoint[] = { 0., -0.12, 0. };//40 cm distance from sensor to ground
+/*################# END KONFIG VALUES ##############*/
 static const float measureVector[] = { 0., 0., 1. };
+/*############# Vector for RayCast should hit to measure object ##############*/
 
 #define Plane
 #ifdef Plane

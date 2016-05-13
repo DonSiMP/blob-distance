@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 	boost::mutex mutex;
 	boost::function<void(pcl::PointCloud<PointType>::Ptr&, pcl::PointCloud<PointType>::Ptr&)> funcRange =
 		[](pcl::PointCloud<PointType>::Ptr& minRange, pcl::PointCloud<PointType>::Ptr& maxRange) {
+		/*########### FILTER VALUES ###############*/
 #ifdef KINECT2_GRABBER
 		minRange->points[0].x = -0.2;
 		maxRange->points[0].x = 0.2;
@@ -118,6 +119,7 @@ int main(int argc, char* argv[])
 #endif
 		//minRange->points[0].y = -.3;
 		//maxRange->points[0].y = .0;
+		/*########### END FILTER VALUES ###############*/
 	};
 
 	// Retrieved Point Cloud Callback Function
