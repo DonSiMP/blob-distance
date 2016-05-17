@@ -63,6 +63,8 @@ pcl::ModelCoefficients::ConstPtr findCluster_PlaneSegmentation(pcl::PointCloud<P
 	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
 	seg.setInputCloud(cloud);
 	seg.segment(*inliers, *coefficients);
+	//Bei Erfolg enthält 'coefficients' die vier Parameter für die Koordinatenform der Ebene
+	//'inliers' enthält die Pixel der Punktwolke, die zu der Ebene gehören
 	if (inliers->indices.size() > 0) {
 		oldCoefficients = coefficients;
 	}
@@ -71,31 +73,18 @@ pcl::ModelCoefficients::ConstPtr findCluster_PlaneSegmentation(pcl::PointCloud<P
 
 float calcDistance(pcl::ModelCoefficients::ConstPtr plane) {
 	float tmp = (plane->values[0] * measureVector[0]) + (plane->values[1] * measureVector[1]) + (plane->values[2] * measureVector[2]);
-	if (tmp > 0) {
+	if (tmp > 0) {//Schnittpunkt existiert.
 		float dist = ((-plane->values[3] - plane->values[0] * startPoint[0] - plane->values[1] * startPoint[1] - plane->values[2] * startPoint[2]) / tmp);
-
 		if (dist > 0) {
-			float intersectionPnt[] = {
+			/*float intersectionPnt[] = {
 				startPoint[0] + dist * measureVector[0],// X
 				startPoint[1] + dist * measureVector[1],// Y
 				startPoint[2] + dist * measureVector[2],// Z
-			};
+			};*/
 			return dist;
 		}
 	}
 	return -1.;
-	/*var tmp = (CollisionPlane.X * pointingVec[0] + CollisionPlane.Y * pointingVec[1] + CollisionPlane.Z * pointingVec[2]);
-	if (tmp != 0)
-	{
-
-		var vecDist = (-CollisionPlane.W - CollisionPlane.X * handPos.X - CollisionPlane.Y * handPos.Y - CollisionPlane.Z * handPos.Y) /
-			tmp;
-		if (vecDist > 0)
-		{
-			isCollision = true;
-			return (handVec + vecDist * pointingVec).GetSpacePoint();
-		}
-	}*/
 }
 
 #endif
@@ -157,7 +146,7 @@ void filterBackground(pcl::PointCloud<PointType>::Ptr cloud) {
 				bool isShort = false;
 				for (size_t d = 0; d < K && !isShort; d++)
 				{
-					if (pointNKNSquaredDistance[d] < .0001) {
+					if (pointNKNSquaredDistance[d] < .0001) {// 0.01m = 1cm | 0.0001 = 0.01²
 						isShort = true;
 					}
 				}
