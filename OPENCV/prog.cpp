@@ -17,11 +17,21 @@ limitations under the License.
 #include <Windows.h>
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include "kinect_grabber.h"
+#if defined(F200_GRABBER) || defined(R200_GRABBER)
+#include "grabber\realSense_grabber.h"
+#define CAM_HEIGHT 210.0
+#endif // F200_GRABBER
+#ifdef KINECT2_GRABBER
+#include "grabber\kinect_grabber.h"
+#define CAM_HEIGHT 400.0
+#endif // KINECT2_GRABBER
+#ifdef DUO_GRABBER
+#include "grabber\duo_grabber.h"
+#define CAM_HEIGHT 400.0
+#endif // KINECT2_GRABBER
 
 
 /*KONFIG VALUES in mm*/
-#define CAM_HEIGHT 400.0
 /*END KONFIG VALUES*/
 const double sqCamHeight = CAM_HEIGHT * CAM_HEIGHT;
 /*END CONST VALUES FROM KONFIG*/
@@ -55,8 +65,12 @@ int main(int, char**) {
 
 	cv::SimpleBlobDetector::Params params = cv::SimpleBlobDetector::Params();
 	params.filterByArea = true;
+	params.minArea = 300;
+	params.maxArea = 100000;
 	params.filterByColor = false;
-	params.filterByCircularity = false;
+	params.filterByCircularity = true;
+	params.minCircularity = 0.6;
+	params.maxCircularity = 0.9;
 	params.filterByConvexity = false;
 	params.filterByInertia = false;
 	blobber = cv::SimpleBlobDetector::create(params);
@@ -65,20 +79,35 @@ int main(int, char**) {
 	tryflip = false;
 
 	//open the video stream and make sure it's opened
-	KinectGrabber grabber;
+#ifdef KINECT2_GRABBER
+	KinectGrabber
+#endif // KINECT2_GRABBER
+#ifdef DUO_GRABBER
+		DuoGrabber
+#endif // DUO_GRABBER
+#if defined(F200_GRABBER) || defined(R200_GRABBER)
+		RealSenseGrabber
+#endif // F200_GRABBER
+		grabber;
 	grabber.start();
 	cv::Mat * frame = new cv::Mat(grabber.depthHeight, grabber.depthWidth, CV_8UC1);
 	grabber.minZ = 0.;// 1000.;
 	grabber.maxZ = 0.;// 1500.;
+#ifdef F200_GRABBER
+	grabber.maxZ = 500.;// 1500.;
+#endif // F200_GRABBER
+#ifdef FR00_GRABBER
+	grabber.maxZ = 1000.;// 1500.;
+#endif // R200_GRABBER
 
 	//frame->resize(grabber.getFrameSize());
+	size_t idx = 0;
 	for (;;) {
 		try
 		{
 			if (!grabber.fillFrame(frame)) {
 				continue;
 			}
-
 			if (buildBackground) {
 				bgSub->apply(*frame, fgMask, .8);
 			}
@@ -86,9 +115,6 @@ int main(int, char**) {
 				bgSub->apply(*frame, fgMask, 0.);
 			}
 
-			//bgSub->getBackgroundImage(bgMask);
-			//imshow("Background Mask", bgMask);
-			//imshow("Foreground Mask", fgMask);
 			cv::Mat fgFrame, fgFrameBlobs;
 			frame->copyTo(fgFrame, fgMask);
 			if (!buildBackground) {
@@ -102,15 +128,18 @@ int main(int, char**) {
 						for (size_t y = var.pt.y - 10; y < var.pt.y && y < grabber.depthHeight; y++)
 						{
 							size_t idx = y * grabber.depthWidth + x;
-							dist += (*grabber.getDepthData())[idx];
-							cnt++;
+							UINT16 val = (*grabber.getDepthData())[idx];
+							if (val > 0) {
+								dist += val;
+								cnt++;
+							}
 						}
 					}
 					dist /= cnt;//middl Value
 					/*##################### calculated distance #####################*/
 					dist = sqrt(dist*dist - sqCamHeight);//real distance using pytagoras
 					/*##################### calculated distance #####################*/
-					cv::putText(fgFrame, to_string((dist / cnt)) + " mm", var.pt, cv::FONT_HERSHEY_PLAIN, 3., cv::Scalar(255, 255, 0));
+					cv::putText(fgFrame, to_string(dist) + " mm", var.pt, cv::FONT_HERSHEY_PLAIN, 3., cv::Scalar(255, 255, 0));
 				}
 				cv::drawKeypoints(fgFrame, keypoints, fgFrameBlobs, cv::Scalar(0, 0, 255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 				cv::imshow("Foreground with Blobs", fgFrameBlobs);
