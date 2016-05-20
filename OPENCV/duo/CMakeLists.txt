@@ -5,7 +5,7 @@ project( blob-detect )
 
 # Find Packages
 find_package( OpenCV REQUIRED )
-find_package( Boost REQUIRED )
+find_package( MyBoost REQUIRED )
 find_package( DUO REQUIRED )
 
 if( OPENCV_FOUND AND DUO_FOUND )
@@ -13,7 +13,7 @@ if( OPENCV_FOUND AND DUO_FOUND )
   
   # Additional Include Directories
   include_directories( ${OPENCVSDK_INCLUDE_DIRS} )
-  include_directories( ${BOOST_INCLUDE_DIRS} )
+  include_directories( ${MY_BOOST_INCLUDE_DIRS} )
   include_directories( ${DUOSDK_INCLUDE_DIRS} )
 
   # Preprocessor Definitions
@@ -22,12 +22,12 @@ if( OPENCV_FOUND AND DUO_FOUND )
 
   # Additional Library Directories
   link_directories( ${OPENCVSDK_LIBRARY_DIRS} )
-  link_directories( ${BOOST_LIBRARY_DIRS} )
+  link_directories( ${MY_BOOST_LIBRARY_DIRS} )
   link_directories( ${DUOSDK_LIBRARY_DIRS} )
 
   # Additional Dependencies
   target_link_libraries( blob-detect ${OPENCVSDK_LIBRARIES} )
-  target_link_libraries( blob-detect ${BOOST_LIBRARIES} )
+  target_link_libraries( blob-detect ${MY_BOOST_LIBRARIES} )
   target_link_libraries( blob-detect ${DUOSDK_LIBRARIES} )
 endif()
 

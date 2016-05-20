@@ -67,7 +67,7 @@ protected:
 
 	cv::Mat left;
 	cv::Mat right;
-	cv::Mat l, r, disp, disp8;
+	//cv::Mat l, r, disp, disp8;
 	std::vector<UINT16> depthBuffer;
 
 	boost::thread thread;
@@ -75,8 +75,8 @@ protected:
 	bool running;
 	bool dataAvailable;
 
-	int numDisparities = 16;
-	int blockSize = 21;
+	//int numDisparities = 16;
+	//int blockSize = 21;
 };
 
 DuoGrabber::DuoGrabber()
@@ -174,9 +174,9 @@ void DuoGrabber::start() {
 	running = true;
 
 	thread = boost::thread(&DuoGrabber::threadFunction, this);
-	cv::namedWindow("controls", 1);
-	cv::createTrackbar("numDisparities", "controls", &numDisparities, 100);
-	cv::createTrackbar("blockSize", "controls", &blockSize, 101);
+	//cv::namedWindow("controls", 1);
+	//cv::createTrackbar("numDisparities", "controls", &numDisparities, 100);
+	//cv::createTrackbar("blockSize", "controls", &blockSize, 101);
 }
 
 bool DuoGrabber::isDataAvailable()
@@ -213,19 +213,22 @@ void DuoGrabber::threadFunction()
 
 		// Set the image data
 		left.data = (uchar*)pFrameData->leftData;
-		left.copyTo(l);
+		//left.copyTo(l);
 		right.data = (uchar*)pFrameData->rightData;
-		right.copyTo(r);
+		//right.copyTo(r);
 		lock.unlock();
- 		cv::Ptr<cv::StereoMatcher> stereo = cv::StereoSGBM::create(0, numDisparities, blockSize);
+ 		/*
+		//VERSUCH die Teifendaten mit opencv zu ermitteln
+		cv::Ptr<cv::StereoMatcher> stereo = cv::StereoSGBM::create(0, numDisparities, blockSize);
 			//cv::StereoBM::create(numDisparities, blockSize);
 		stereo->compute(left, right, disp);
 		disp.convertTo(disp8, CV_8U);
 		dataAvailable = true;
-		
+		//VERSUCH ENDE
+		*/
 
 
-		if (false && Dense3DGetDepth(dense3d, pFrameData->leftData, pFrameData->rightData, (float*)disparity.data, (PDense3DDepth)depth3d.data)) {
+		if (Dense3DGetDepth(dense3d, pFrameData->leftData, pFrameData->rightData, (float*)disparity.data, (PDense3DDepth)depth3d.data)) {
 			UINT16 * ptr = &depthBuffer[0];
 			PDense3DDepth depthData = (PDense3DDepth)depth3d.data;
 			for (size_t i = 0; i < depthBuffer.size(); i++, depthData++, ptr++)
@@ -272,9 +275,9 @@ bool DuoGrabber::fillFrame(cv::Mat * destData)
 
 			destData->at<UINT8>(i) = depth;
 		}
-		cv::imshow("Left", l);
+		/*cv::imshow("Left", l);//DEBUG Bilder
 		cv::imshow("Right", r);
-		cv::imshow("Disparity", disp8);
+		cv::imshow("Disparity", disp8);*/
 		return true;
 	}
 	return false;

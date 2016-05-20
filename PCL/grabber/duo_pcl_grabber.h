@@ -27,8 +27,8 @@ limitations under the License.
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#define WIDTH	320
-#define HEIGHT	240
+#define WIDTH	752//320
+#define HEIGHT	480//240
 #define FPS		30
 
 namespace pcl

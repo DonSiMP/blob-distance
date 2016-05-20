@@ -5,29 +5,29 @@ project( blob-detect )
 
 # Find Packages
 find_package( OpenCV REQUIRED )
-find_package( Boost REQUIRED )
-find_package( RealSense REQUIRED )
+find_package( MyBoost REQUIRED )
+find_package( Leap REQUIRED )
 
-if( OPENCV_FOUND AND RealSense_FOUND )
-  add_executable( blob-detect ../prog.cpp ../grabber/realSense_grabber.h )
+if( OPENCV_FOUND AND Leap_FOUND )
+  add_executable( blob-detect ../prog.cpp ../grabber/leap_grabber.h )
   
   # Additional Include Directories
   include_directories( ${OPENCVSDK_INCLUDE_DIRS} )
-  include_directories( ${BOOST_INCLUDE_DIRS} )
-  include_directories( ${RealSenseSDK_INCLUDE_DIRS} )
+  include_directories( ${MY_BOOST_INCLUDE_DIRS} )
+  include_directories( ${LeapSDK_INCLUDE_DIRS} )
 
   # Preprocessor Definitions
-  add_definitions( -DF200_GRABBER )
+  add_definitions( -DLEAP_GRABBER )
   add_definitions( ${OPENCV_DEFINITIONS} )
 
   # Additional Library Directories
   link_directories( ${OPENCVSDK_LIBRARY_DIRS} )
-  link_directories( ${BOOST_LIBRARY_DIRS} )
-  link_directories( ${RealSenseSDK_LIBRARY_DIRS} )
+  link_directories( ${MY_BOOST_LIBRARY_DIRS} )
+  link_directories( ${LeapSDK_LIBRARY_DIRS} )
 
   # Additional Dependencies
   target_link_libraries( blob-detect ${OPENCVSDK_LIBRARIES} )
-  target_link_libraries( blob-detect ${BOOST_LIBRARIES} )
-  target_link_libraries( blob-detect ${RealSenseSDK_LIBRARIES} )
+  target_link_libraries( blob-detect ${MY_BOOST_LIBRARIES} )
+  target_link_libraries( blob-detect ${LeapSDK_LIBRARIES} )
 endif()
 

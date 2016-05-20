@@ -29,6 +29,10 @@ limitations under the License.
 #include "grabber\duo_grabber.h"
 #define CAM_HEIGHT 400.0
 #endif // KINECT2_GRABBER
+#ifdef LEAP_GRABBER
+#include "grabber\leap_grabber.h"
+#define CAM_HEIGHT 210.0
+#endif // LEAP_GRABBER
 
 
 /*KONFIG VALUES in mm*/
@@ -85,6 +89,9 @@ int main(int, char**) {
 #ifdef DUO_GRABBER
 		DuoGrabber
 #endif // DUO_GRABBER
+#ifdef LEAP_GRABBER
+		LeapGrabber
+#endif // LEAP_GRABBER
 #if defined(F200_GRABBER) || defined(R200_GRABBER)
 		RealSenseGrabber
 #endif // F200_GRABBER
@@ -125,7 +132,7 @@ int main(int, char**) {
 					double dist = 0., cnt = 0.;
 					for (size_t x = var.pt.x - 10; x < var.pt.x + 10 && x < grabber.depthWidth; x++)
 					{
-						for (size_t y = var.pt.y - 10; y < var.pt.y && y < grabber.depthHeight; y++)
+						for (size_t y = var.pt.y - 10; y < var.pt.y + 10 && y < grabber.depthHeight; y++)
 						{
 							size_t idx = y * grabber.depthWidth + x;
 							UINT16 val = (*grabber.getDepthData())[idx];
