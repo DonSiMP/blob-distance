@@ -23,7 +23,7 @@ limitations under the License.
 #endif // F200_GRABBER
 #ifdef KINECT2_GRABBER
 #include "grabber\kinect_grabber.h"
-#define CAM_HEIGHT 400.0
+#define CAM_HEIGHT 540.0
 #endif // KINECT2_GRABBER
 #ifdef DUO_GRABBER
 #include "grabber\duo_grabber.h"
@@ -68,9 +68,9 @@ int main(int, char**) {
 	bgSub = cv::createBackgroundSubtractorMOG2(100, 16.0, false); //MOG2 approach
 
 	cv::SimpleBlobDetector::Params params = cv::SimpleBlobDetector::Params();
-	params.filterByArea = true;
-	params.minArea = 300;
-	params.maxArea = 100000;
+	//params.filterByArea = true;
+	//params.minArea = 300;
+	//params.maxArea = 100000;
 	params.filterByColor = false;
 	params.filterByCircularity = true;
 	params.minCircularity = 0.6;
@@ -100,6 +100,10 @@ int main(int, char**) {
 	cv::Mat * frame = new cv::Mat(grabber.depthHeight, grabber.depthWidth, CV_8UC1);
 	grabber.minZ = 0.;// 1000.;
 	grabber.maxZ = 0.;// 1500.;
+#ifdef KINECT2_GRABBER
+	//grabber.minZ = 800.;// 1000.;
+	//grabber.maxZ = 2000.;// 1500.;
+#endif
 #ifdef F200_GRABBER
 	grabber.maxZ = 500.;// 1500.;
 #endif // F200_GRABBER
