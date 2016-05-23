@@ -112,10 +112,10 @@ int main(int argc, char* argv[])
 		maxRange->points[0].z = 2.;
 #endif // KINECT2_GRABBER
 #ifndef KINECT2_GRABBER
-		//minRange->points[0].x = -0.2;
-		//maxRange->points[0].x = 0.2;
+		minRange->points[0].x = -0.2;
+		maxRange->points[0].x = 0.2;
 		minRange->points[0].z = .1;
-		maxRange->points[0].z = 1.;
+		maxRange->points[0].z = 1.3;
 #endif
 		//minRange->points[0].y = -.3;
 		//maxRange->points[0].y = .0;
