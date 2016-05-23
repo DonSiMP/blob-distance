@@ -19,7 +19,7 @@ limitations under the License.
 #include <iostream>
 #if defined(F200_GRABBER) || defined(R200_GRABBER)
 #include "grabber\realSense_grabber.h"
-#define CAM_HEIGHT 210.0
+#define CAM_HEIGHT 226.0
 #endif // F200_GRABBER
 #ifdef KINECT2_GRABBER
 #include "grabber\kinect_grabber.h"
@@ -69,12 +69,12 @@ int main(int, char**) {
 
 	cv::SimpleBlobDetector::Params params = cv::SimpleBlobDetector::Params();
 	params.filterByArea = true;
-	params.minArea = 300;
+	params.minArea = 100;
 	params.maxArea = 100000;
 	params.filterByColor = false;
-	params.filterByCircularity = true;
-	params.minCircularity = 0.6;
-	params.maxCircularity = 0.9;
+	//params.filterByCircularity = true;
+	//params.minCircularity = 0.6;
+	//params.maxCircularity = 0.9;
 	params.filterByConvexity = false;
 	params.filterByInertia = false;
 	blobber = cv::SimpleBlobDetector::create(params);
@@ -98,8 +98,8 @@ int main(int, char**) {
 		grabber;
 	grabber.start();
 	cv::Mat * frame = new cv::Mat(grabber.depthHeight, grabber.depthWidth, CV_8UC1);
-	grabber.minZ = 0.;// 1000.;
-	grabber.maxZ = 0.;// 1500.;
+	grabber.minZ = 700.;
+	grabber.maxZ = 1300.;// 1500.;
 #ifdef F200_GRABBER
 	grabber.maxZ = 500.;// 1500.;
 #endif // F200_GRABBER

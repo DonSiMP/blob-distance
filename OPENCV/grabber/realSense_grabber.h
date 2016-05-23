@@ -27,8 +27,8 @@ limitations under the License.
 #define FPS		60
 #endif
 #ifdef R200_GRABBER
-#define WIDTH	628
-#define HEIGHT	468
+#define WIDTH	480//628
+#define HEIGHT	360//468
 #define FPS		60
 #endif
 
